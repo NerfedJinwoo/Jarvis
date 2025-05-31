@@ -1,1 +1,32 @@
-<!Doctype html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jarvis AI</title>
+</head>
+<body>
+  <button onclick="startListening()">Talk to Jarvis</button>
+  <div id="output"></div>
+  <script>
+    // Speech recognition
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.onresult = async function(event) {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById('output').innerText = 'You said: ' + transcript;
+      // Send transcript to AI backend (e.g., OpenAI API)
+      const response = await fetch('/ask', { 
+        method: 'POST', 
+        body: JSON.stringify({ query: transcript }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      speak(data.answer);
+      document.getElementById('output').innerText += '\nJarvis: ' + data.answer;
+    };
+    function startListening() { recognition.start(); }
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utter);
+    }
+  </script>
+</body>
+</html>
